@@ -14,7 +14,7 @@ void removerAresta(double matriz[][MAX], int origem, int destino){
     matriz[destino][origem] = -1;
 }
 
-void inicializa_matriz(double matriz[][MAX]){
+void inicializar_matriz(double matriz[][MAX]){
     for (int i = 0; i < MAX; i++) {
         for (int j = 0; j < MAX; j++) {
             matriz[i][j] = -1;
@@ -22,7 +22,7 @@ void inicializa_matriz(double matriz[][MAX]){
     }
 }
 
-void le_arquivo(double matriz[][MAX], FILE *arquivo){
+void ler_arquivo(double matriz[][MAX], FILE *arquivo){
     for (int i = 0; i < MAX; i++) {
         for (int j = 0; j < MAX; j++) {
             if (fscanf(arquivo, "%lf", &matriz[i][j]) != 1) {
@@ -33,17 +33,32 @@ void le_arquivo(double matriz[][MAX], FILE *arquivo){
     }
 }
 
-void imprime_matriz(double matriz[][MAX]){
+void imprimir_matriz(double matriz[][MAX]){
     printf("\nMatriz de custos:\n");
     for (int i = 0; i < MAX; i++) {
         for (int j = 0; j < MAX; j++) {
             if (matriz[i][j] == -1)
-                printf(" -- ");
+                printf("--       | ");
             else
-                printf(" %2.1lf ", matriz[i][j]);
+                printf("%-8.2lf | ", matriz[i][j]);
         }
         printf("\n");
     }
+}
+
+int busca_indice_planeta(char* planetas[]){
+    char nome_planeta[9];
+    printf("Nome do planeta a ser buscado: ");
+    scanf("%s", nome_planeta);
+
+    for (int i = 0; i < MAX; i++){
+        if(strcmp(nome_planeta, planetas[i]) == 0){
+        return i;
+        }
+        
+    }
+    
+
 }
 
 int main(){
@@ -53,24 +68,23 @@ int main(){
     arquivo = fopen("custoPlanetas.txt", "r");
 
     if (arquivo == NULL) {
-    printf("Arquivo nao foi aberto corretamente!\n");
+    printf("Arquivo nao foi possivel abrir o arquivo!\n");
     return 1;
-}
+} 
 
     char* planetas[MAX] = {"Sol", "Mercurio", "Venus", "Terra", "Marte", "Jupiter",
          "Saturno", "Urano", "Netuno"};
     double matriz[MAX][MAX];
     
-    inicializa_matriz(matriz);
+    inicializar_matriz(matriz);
 
-    le_arquivo(matriz, arquivo);
+    ler_arquivo(matriz, arquivo);
 
-    imprime_matriz(matriz);
+    imprimir_matriz(matriz);
 
     if (fclose(arquivo) != 0) {
         printf("Erro ao fechar o arquivo!\n");
     }
 
     return 0;
-
 }
