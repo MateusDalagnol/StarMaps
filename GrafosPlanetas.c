@@ -4,7 +4,28 @@
 
 #define MAX 9 //Planetas incluindo o sol
 
-void inserirAresta(double matriz[][MAX], int origem, int destino, double custo){
+int busca_indice_planeta(char* planetas[]){
+    char nome_planeta[9];
+    printf("Nome do planeta a ser buscado: ");
+    scanf("%s", nome_planeta);
+
+    for (int i = 0; i < MAX; i++){
+        if(strcmp(nome_planeta, planetas[i]) == 0){
+        return i;
+        }
+        
+        
+    }
+    return -1;
+    
+
+}
+
+void inserirAresta(double matriz[][MAX], int origem, int destino){
+    double custo;
+    printf("Digite o custo do trajeto: ");
+    scanf("%lf", &custo);
+
     matriz[origem][destino] = custo;
     matriz[destino][origem] = custo;
 }
@@ -44,22 +65,10 @@ void imprimir_matriz(double matriz[][MAX]){
         }
         printf("\n");
     }
+    printf("\n\n");
 }
 
-int busca_indice_planeta(char* planetas[]){
-    char nome_planeta[9];
-    printf("Nome do planeta a ser buscado: ");
-    scanf("%s", nome_planeta);
 
-    for (int i = 0; i < MAX; i++){
-        if(strcmp(nome_planeta, planetas[i]) == 0){
-        return i;
-        }
-        
-    }
-    
-
-}
 
 int main(){
 
@@ -79,6 +88,15 @@ int main(){
     inicializar_matriz(matriz);
 
     ler_arquivo(matriz, arquivo);
+
+    imprimir_matriz(matriz);
+
+    printf("Add aresta\n\n");
+    inserirAresta(matriz, busca_indice_planeta(planetas), busca_indice_planeta(planetas));
+    imprimir_matriz(matriz);
+
+    printf("Remove aresta\n\n");
+    removerAresta(matriz, busca_indice_planeta(planetas), busca_indice_planeta(planetas));
 
     imprimir_matriz(matriz);
 
