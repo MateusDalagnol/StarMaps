@@ -2,26 +2,59 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX 9 //Planetas incluindo o sol
+#define MAX_PLANETAS 9 //Planetas incluindo o sol
+
+FILE* abrir_arquivo_Reescrita(){
+    FILE* arquivo = fopen("custoPlanetas.txt", "w");
+
+    if (arquivo == NULL) {
+        printf("\nArquivo nao foi possivel abrir o arquivo!\n");
+        printf("\nArquivo nao lido. Matriz inicializada com valores padrao!\n");
+        return NULL;
+    }
+    
+    return arquivo;
+}
+
+FILE* abrir_arquivo_Leitura(){
+    FILE* arquivo = fopen("custoPlanetas.txt", "r");
+
+    if (arquivo == NULL) {
+        printf("\nArquivo nao foi possivel abrir o arquivo!\n");
+        printf("\nArquivo nao lido. Matriz inicializada com valores padrao!\n");
+        return NULL;
+    }
+
+    return arquivo;
+}
+
+void fechar_arquivo(FILE* arquivo){
+    if(fclose(arquivo) != 0) {
+        printf("Erro ao fechar o arquivo!\n");
+    }
+}
 
 int busca_indice_planeta(char* planetas[]){
     char nome_planeta[9];
-    printf("Nome do planeta a ser buscado: ");
-    scanf("%s", nome_planeta);
+    
+    printf("\n\nPlanetas e Estrelas disponveis:\n\n");
+for (int i = 0; i < MAX_PLANETAS; i++) {
+    printf("- %s\n", planetas[i]);
+}
+    printf("\nNome do planeta desejado: ");
+    scanf("%8s", nome_planeta);
 
-    for (int i = 0; i < MAX; i++){
+    for (int i = 0; i < MAX_PLANETAS; i++){
         if(strcmp(nome_planeta, planetas[i]) == 0){
         return i;
         }
         
-        
     }
     return -1;
-    
 
 }
 
-void inserirAresta(double matriz[][MAX], int origem, int destino){
+void inserirAresta(double matriz[][MAX_PLANETAS], int origem, int destino){
     double custo;
     printf("Digite o custo do trajeto: ");
     scanf("%lf", &custo);
@@ -30,34 +63,36 @@ void inserirAresta(double matriz[][MAX], int origem, int destino){
     matriz[destino][origem] = custo;
 }
 
-void removerAresta(double matriz[][MAX], int origem, int destino){
+void removerAresta(double matriz[][MAX_PLANETAS], int origem, int destino){
     matriz[origem][destino] = -1;
     matriz[destino][origem] = -1;
 }
 
-void inicializar_matriz(double matriz[][MAX]){
-    for (int i = 0; i < MAX; i++) {
-        for (int j = 0; j < MAX; j++) {
+void inicializar_matriz(double matriz[][MAX_PLANETAS]){
+    for (int i = 0; i < MAX_PLANETAS; i++) {
+        for (int j = 0; j < MAX_PLANETAS; j++) {
             matriz[i][j] = -1;
         }
     }
 }
 
-void ler_arquivo(double matriz[][MAX], FILE *arquivo){
-    for (int i = 0; i < MAX; i++) {
-        for (int j = 0; j < MAX; j++) {
+void ler_arquivo(double matriz[][MAX_PLANETAS], FILE *arquivo){
+    for (int i = 0; i < MAX_PLANETAS; i++) {
+        for (int j = 0; j < MAX_PLANETAS; j++) {
             if (fscanf(arquivo, "%lf", &matriz[i][j]) != 1) {
                 printf("Erro ao ler [%d][%d]\n", i, j);
                 matriz[i][j] = -1;
             }
         }
     }
+
+    fechar_arquivo(arquivo);
 }
 
-void imprimir_matriz(double matriz[][MAX]){
+void imprimir_matriz(double matriz[][MAX_PLANETAS]){
     printf("\nMatriz de custos:\n");
-    for (int i = 0; i < MAX; i++) {
-        for (int j = 0; j < MAX; j++) {
+    for (int i = 0; i < MAX_PLANETAS; i++) {
+        for (int j = 0; j < MAX_PLANETAS; j++) {
             if (matriz[i][j] == -1)
                 printf("--       | ");
             else
@@ -68,39 +103,51 @@ void imprimir_matriz(double matriz[][MAX]){
     printf("\n\n");
 }
 
+void menu_busca(double matriz[][MAX_PLANETAS], char* planetas[]){
 
+}
 
-int main(){
+int atualizar_matriz(double matriz[][MAX_PLANETAS]){
+    FILE* arquivo = abrir_arquivo_Reescrita();
 
-    FILE *arquivo;
+    for (int i = 0; i < MAX_PLANETAS; i++) {
+        for (int j = 0; j < MAX_PLANETAS; j++) {
+            if (matriz[i][j] == -1){
+                fprintf(arquivo, "%.0lf ", matriz[i][j]);
+            }else{
+                fprintf(arquivo, "%.2lf ", matriz[i][j]);
+                
+            }
+            
+        }
+        fprintf(arquivo, "\n");
+    }
 
-    arquivo = fopen("custoPlanetas.txt", "r");
+    fechar_arquivo(arquivo);
+    return 0;
+}
 
-    if (arquivo == NULL) {
-    printf("Arquivo nao foi possivel abrir o arquivo!\n");
-    return 1;
-} 
-
-    char* planetas[MAX] = {"Sol", "Mercurio", "Venus", "Terra", "Marte", "Jupiter",
-         "Saturno", "Urano", "Netuno"};
-    double matriz[MAX][MAX];
-    
-    inicializar_matriz(matriz);
-
-    ler_arquivo(matriz, arquivo);
-
+void menu(double matriz[][MAX_PLANETAS], char* planetas[]){
     char opcao;
     
     do{
-        printf("\nMenu de opcoes: \n\n1 - Imprimir a matriz\n2 - Inserir a aresta\n3 - Remover a aresta\n\nEscolha um opcao: ");
+        printf("\nMenu de opcoes: \n\n\
+1 - Imprimir a matriz\n\
+2 - Inserir a aresta\n\
+3 - Remover a aresta\n\
+4 - Atualizar Matriz\n\
+5 - Menu de buscar\n\
+0 - Sair do menu\n\n\
+Escolha um opcao: ");
 
         scanf(" %c", &opcao);
         switch(opcao){
-            case '1':
+            case '1':{
                 imprimir_matriz(matriz);
                 break;
+            }
             case '2':{
-                printf("\nAdd aresta\n\n");
+                printf("\nAdd aresta");
                 int origem = busca_indice_planeta(planetas);
                 int destino = busca_indice_planeta(planetas);
 
@@ -123,14 +170,34 @@ int main(){
                 }
                 break;
             }
+            case '4':{
+                atualizar_matriz(matriz);
+                break;
+            }
+            case '5':{
+                menu_busca(matriz, planetas);
+                break;
+            }
             default:
                 break;
         }
     }while (opcao != '0');
+}
 
-    if(fclose(arquivo) != 0) {
-        printf("Erro ao fechar o arquivo!\n");
-    }
+int main(){
+
+    char* planetas[MAX_PLANETAS] = {"Sol", "Mercurio", "Venus", "Terra", "Marte", "Jupiter",
+    "Saturno", "Urano", "Netuno"};
+
+    double matriz[MAX_PLANETAS][MAX_PLANETAS];
+
+    inicializar_matriz(matriz);
+
+    ler_arquivo(matriz, abrir_arquivo_Leitura());
+
+    menu(matriz, planetas);
+
+    atualizar_matriz(matriz);
 
     return 0;
 }
