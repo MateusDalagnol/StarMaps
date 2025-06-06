@@ -116,17 +116,110 @@ void imprimir_matriz(double matriz[][MAX_PLANETAS], char* planetas[]){
     printf("\n\n");
 }
 
+double calcularCusto(double matriz[][MAX_PLANETAS], int rota[]) {
+	double custo = 0;
+	for (int i = 0; i < MAX_PLANETAS - 1; i++) {
+		custo += matriz[rota[i]][rota[i+1]];
+	}
+	return custo;
+}
+
+void mostrarRota(int* rota, char* planetas[]) {
+	for (int i = 0; i < MAX_PLANETAS; i++) {
+		printf("%s", planetas[rota[i]]);
+		if (i != MAX_PLANETAS - 1) printf (" -> ");
+	}
+	printf("\n");
+}
+
+void rotasPossiveis(int* visitados, double matriz[][MAX_PLANETAS], int planeta_atual, int* rota, double* menor_custo, int tamanho, int* melhor_caminho, char* planetas[]) {
+	rota[tamanho++] = planeta_atual;
+	visitados[planeta_atual] = 1;
+
+	if (tamanho == MAX_PLANETAS) {
+		double custo = calcularCusto(matriz, rota);
+
+		if (custo < *menor_custo) {
+			*menor_custo = custo;
+			for (int i = 0; i < MAX_PLANETAS; i++) melhor_caminho[i] = rota[i];
+		}
+
+	} else {
+		for (int i = 0; i < MAX_PLANETAS; i++) {
+			if (matriz[planeta_atual][i] != -1 && !visitados[i]) {
+				rotasPossiveis(visitados, matriz, i, rota, menor_custo, tamanho, melhor_caminho, planetas);
+			}
+		}
+	}
+
+	visitados[planeta_atual] = 0;
+}
+
+void busca_todos_os_caminho(double matriz[][MAX_PLANETAS], char* planetas[], int* melhor_rota){
+    int visitado[MAX_PLANETAS] = {0};
+   
+    int rota[MAX_PLANETAS] = {0};
+    double menor_custo = 1e9;
+
+    for (int i = 0; i < MAX_PLANETAS; i++) {
+		rotasPossiveis(visitado, matriz, i, rota, &menor_custo, 0, melhor_rota, planetas);
+        mostrarRota(melhor_rota, planetas);
+	}
+    
+}
+
+double busca_menor_caminho(double matriz[][MAX_PLANETAS], char* planetas[], int* melhor_rota){
+    int visitado[MAX_PLANETAS] = {0};
+   
+    int rota[MAX_PLANETAS] = {0};
+    double menor_custo = 1e9;
+
+    for (int i = 0; i < MAX_PLANETAS; i++) {
+		rotasPossiveis(visitado, matriz, i, rota, &menor_custo, 0, melhor_rota, planetas);
+	}
+    
+    
+    return menor_custo;
+}
+
 void menu_busca(double matriz[][MAX_PLANETAS], char* planetas[]){
-    //ta vazio mais vou add coisas
+    char opcao;
+    do{
+
+        printf("\nMenu de Busca:\n\
+1 - Mostrar menor rota\n\
+2 - mostrar menor caminha a partir de um planeta\n\
+0 - Voltar ao menu principal\n\
+Escolha: \n\n");
+
+        scanf(" %c", &opcao);
+        switch (opcao)
+        {
+        case '1':{
+            int melhor_rota[MAX_PLANETAS] = {0};
+            printf("\nCusto total: %.2lfM km\n", busca_menor_caminho(matriz, planetas, melhor_rota));
+            mostrarRota(melhor_rota, planetas);
+            break;
+        }
+        case '2':{
+            int melhor_rota[MAX_PLANETAS] = {0};
+            busca_todos_os_caminho(matriz, planetas, melhor_rota);
+            break;
+        }
+        default:
+            break;
+        }
+    }while(opcao != '0');
 }
 
 int atualizar_matriz(double matriz[][MAX_PLANETAS]){
     FILE* arquivo = abrir_arquivo_Reescrita();
 
+    if(arquivo == NULL){return -1;}
     for (int i = 0; i < MAX_PLANETAS; i++) {
         for (int j = 0; j < MAX_PLANETAS; j++) {
             if (matriz[i][j] == -1){
-                fprintf(arquivo, "%.0lf ", matriz[i][j]);
+                fprintf(arquivo, "%lf ", matriz[i][j]);
             }else{
                 fprintf(arquivo, "%.2lf ", matriz[i][j]);
                 
@@ -144,7 +237,9 @@ void menu(double matriz[][MAX_PLANETAS], char* planetas[]){
     char opcao;
     
     do{
-        printf("\nMenu de opcoes: \n\n\
+        printf("\n=== MENU PRINCIPAL ===\n");
+
+        printf("\n\
 1 - Imprimir a matriz\n\
 2 - Inserir a aresta\n\
 3 - Remover a aresta\n\
@@ -204,9 +299,12 @@ int main(){
 
     double matriz[MAX_PLANETAS][MAX_PLANETAS];
 
-    inicializar_matriz(matriz);
-
-    ler_arquivo(matriz, abrir_arquivo_Leitura());
+    FILE* arquivo = abrir_arquivo_Leitura();
+        if (arquivo != NULL) {
+        ler_arquivo(matriz, arquivo);
+        } else {
+        inicializar_matriz(matriz);
+    }
 
     menu(matriz, planetas);
 
