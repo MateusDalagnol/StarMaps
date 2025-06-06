@@ -89,22 +89,35 @@ void ler_arquivo(double matriz[][MAX_PLANETAS], FILE *arquivo){
     fechar_arquivo(arquivo);
 }
 
-void imprimir_matriz(double matriz[][MAX_PLANETAS]){
-    printf("\nMatriz de custos:\n");
-    for (int i = 0; i < MAX_PLANETAS; i++) {
+void imprimir_matriz(double matriz[][MAX_PLANETAS], char* planetas[]){
+    printf("\nMatriz de custos:\n\n");
+    printf("\n------------------------------------------------------------------------\
+-------------------------------------------------------------------------\n");
+    printf("             ");
+    for (int i = 0; i < MAX_PLANETAS; i++){
+            printf("%-14s ", planetas[i]);
+    }
+
+    printf("\n------------------------------------------------------------------------\
+-------------------------------------------------------------------------");
+    printf("\n");
+    for (int i = 0; i < MAX_PLANETAS; i++){
+        printf("|%-8s - ", planetas[i]);
         for (int j = 0; j < MAX_PLANETAS; j++) {
             if (matriz[i][j] == -1)
-                printf("--       | ");
+                printf("     --      | ");
             else
-                printf("%-8.2lf | ", matriz[i][j]);
+                printf("%-8.2lfM km | ", matriz[i][j]);
         }
         printf("\n");
     }
+    printf("------------------------------------------------------------------------\
+-------------------------------------------------------------------------");
     printf("\n\n");
 }
 
 void menu_busca(double matriz[][MAX_PLANETAS], char* planetas[]){
-
+    //ta vazio mais vou add coisas
 }
 
 int atualizar_matriz(double matriz[][MAX_PLANETAS]){
@@ -143,7 +156,7 @@ Escolha um opcao: ");
         scanf(" %c", &opcao);
         switch(opcao){
             case '1':{
-                imprimir_matriz(matriz);
+                imprimir_matriz(matriz, planetas);
                 break;
             }
             case '2':{
