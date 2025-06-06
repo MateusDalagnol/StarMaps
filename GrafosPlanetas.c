@@ -89,18 +89,46 @@ int main(){
 
     ler_arquivo(matriz, arquivo);
 
-    imprimir_matriz(matriz);
+    char opcao;
+    
+    do{
+        printf("\nMenu de opcoes: \n\n1 - Imprimir a matriz\n2 - Inserir a aresta\n3 - Remover a aresta\n\nEscolha um opcao: ");
 
-    printf("Add aresta\n\n");
-    inserirAresta(matriz, busca_indice_planeta(planetas), busca_indice_planeta(planetas));
-    imprimir_matriz(matriz);
+        scanf(" %c", &opcao);
+        switch(opcao){
+            case '1':
+                imprimir_matriz(matriz);
+                break;
+            case '2':{
+                printf("\nAdd aresta\n\n");
+                int origem = busca_indice_planeta(planetas);
+                int destino = busca_indice_planeta(planetas);
 
-    printf("Remove aresta\n\n");
-    removerAresta(matriz, busca_indice_planeta(planetas), busca_indice_planeta(planetas));
+                if (origem == -1 || destino == -1) {
+                    printf("\nPlaneta nao encontrado! Operacao cancelada.\n");
+                } else {
+                    inserirAresta(matriz, origem, destino);
+                }
+                break;  
+            }
+            case '3':{
+                printf("\nRemove aresta\n\n");
+                int origem = busca_indice_planeta(planetas);
+                int destino = busca_indice_planeta(planetas);
 
-    imprimir_matriz(matriz);
+                if (origem == -1 || destino == -1) {
+                    printf("\nPlaneta nao encontrado! Operacao cancelada.\n");
+                } else {
+                    removerAresta(matriz, origem, destino);
+                }
+                break;
+            }
+            default:
+                break;
+        }
+    }while (opcao != '0');
 
-    if (fclose(arquivo) != 0) {
+    if(fclose(arquivo) != 0) {
         printf("Erro ao fechar o arquivo!\n");
     }
 
