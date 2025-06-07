@@ -4,11 +4,8 @@
 
 #define MAX_PLANETAS 9 //Planetas incluindo o sol
 
-FILE* abrir_arquivo_Reescrita(){
-    printf("nome do arquivo: (com o .txt no final): ");
-    char nome_do_arquivo[20];
-    scanf("%s", nome_do_arquivo);
-    FILE* arquivo = fopen(nome_do_arquivo, "w");
+FILE* abrir_arquivo_Reescrita(char nomeArquivo[]){
+    FILE* arquivo = fopen(nomeArquivo, "w");
 
     if (arquivo == NULL) {
         printf("\nArquivo nao foi possivel abrir o arquivo!\n");
@@ -19,8 +16,8 @@ FILE* abrir_arquivo_Reescrita(){
     return arquivo;
 }
 
-FILE* abrir_arquivo_Leitura(){
-    FILE* arquivo = fopen("custoPlanetas.txt", "r");
+FILE* abrir_arquivo_Leitura(char nomeArquivo[]){
+    FILE* arquivo = fopen(nomeArquivo, "r");
 
     if (arquivo == NULL) {
         printf("\nArquivo nao foi possivel abrir o arquivo!\n");
@@ -244,28 +241,42 @@ Escolha: \n\n");
     }while(opcao != '0');
 }
 
+int tamanho_arquivo(char* nome_arquivo)
+{
+    FILE *arquivo = fopen(nome_arquivo, "r");
+
+    if(arquivo == NULL)
+        return 0;
+
+    fseek(arquivo, 0, SEEK_END);
+    int size = ftell(arquivo);
+    fclose(arquivo);
+
+    return size;
+}
+
 int atualizar_matriz(double matriz[][MAX_PLANETAS], double matriz_restringida[][MAX_PLANETAS]){
     printf("deseja altera o arquivo da matriz restringida? 1 - sim / 2 - nao ");
     int restringida;
     scanf("%d", &restringida);
     if(restringida == 1){
-        FILE* arquivo = abrir_arquivo_Reescrita();
-        if(arquivo == NULL){return -1;}
+        FILE* arquivo2 = abrir_arquivo_Reescrita("custoRestricao.txt");
+        if(arquivo2 == NULL){return -1;}
         for (int i = 0; i < MAX_PLANETAS; i++) {
             for (int j = 0; j < MAX_PLANETAS; j++) {
                 if (matriz_restringida[i][j] == -1){
-                    fprintf(arquivo, "%.2lf ", matriz_restringida[i][j]);
+                    fprintf(arquivo2, "%.2lf ", matriz_restringida[i][j]);
                 }else{
-                    fprintf(arquivo, "%.2lf ", matriz_restringida[i][j]);
+                    fprintf(arquivo2, "%.2lf ", matriz_restringida[i][j]);
                 
                 }
             
             }
-        fprintf(arquivo, "\n");
+        fprintf(arquivo2, "\n");
         }
-        fechar_arquivo(arquivo);
+        fechar_arquivo(arquivo2);
     }else{
-         FILE* arquivo = abrir_arquivo_Reescrita();
+         FILE* arquivo = abrir_arquivo_Reescrita("custoPlaneta.txt");
         if(arquivo == NULL){return -1;}
         for (int i = 0; i < MAX_PLANETAS; i++) {
             for (int j = 0; j < MAX_PLANETAS; j++) {
@@ -380,12 +391,19 @@ int main(){
     double matriz[MAX_PLANETAS][MAX_PLANETAS];
     double matriz_restringida[MAX_PLANETAS][MAX_PLANETAS];
 
-    FILE* arquivo = abrir_arquivo_Leitura();
+    FILE* arquivo = abrir_arquivo_Leitura("custoPlanetas.txt");
         if (arquivo != NULL) {
-        ler_arquivo(matriz, arquivo);
+            ler_arquivo(matriz, arquivo);
         } else {
-        inicializar_matriz(matriz);
-    }
+            inicializar_matriz(matriz);
+        }
+    FILE* arquivo2 = abrir_arquivo_Leitura("custoRestricao.txt");
+        if (arquivo2 != NULL && tamanho_arquivo("custoRestricao.txt") != 0) {
+            ler_arquivo(matriz_restringida, arquivo2);
+        }else{
+            ler_arquivo(matriz_restringida, abrir_arquivo_Leitura("custoPlanetas.txt"));
+        }
+    
 
     menu(matriz, planetas, matriz_restringida);
 
