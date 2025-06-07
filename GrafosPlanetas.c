@@ -156,12 +156,10 @@ void rotasPossiveis(int* visitados, double matriz[][MAX_PLANETAS], int planeta_a
 }
 
 void busca_todos_os_caminho(double matriz[][MAX_PLANETAS], char* planetas[], int* melhor_rota){
-    int visitado[MAX_PLANETAS] = {0};
-   
-    int rota[MAX_PLANETAS] = {0};
-    double menor_custo = 1e9;
-
     for (int i = 0; i < MAX_PLANETAS; i++) {
+        int visitado[MAX_PLANETAS] = {0};
+        int rota[MAX_PLANETAS] = {0};
+        double menor_custo = 1e9;
 		rotasPossiveis(visitado, matriz, i, rota, &menor_custo, 0, melhor_rota, planetas);
         mostrarRota(melhor_rota, planetas);
 	}
@@ -169,12 +167,10 @@ void busca_todos_os_caminho(double matriz[][MAX_PLANETAS], char* planetas[], int
 }
 
 double busca_menor_caminho(double matriz[][MAX_PLANETAS], char* planetas[], int* melhor_rota){
-    int visitado[MAX_PLANETAS] = {0};
-   
-    int rota[MAX_PLANETAS] = {0};
     double menor_custo = 1e9;
-
     for (int i = 0; i < MAX_PLANETAS; i++) {
+        int visitado[MAX_PLANETAS] = {0};
+        int rota[MAX_PLANETAS] = {0};
 		rotasPossiveis(visitado, matriz, i, rota, &menor_custo, 0, melhor_rota, planetas);
 	}
     
@@ -182,7 +178,21 @@ double busca_menor_caminho(double matriz[][MAX_PLANETAS], char* planetas[], int*
     return menor_custo;
 }
 
-void menu_busca(double matriz[][MAX_PLANETAS], char* planetas[]){
+void bloquear_planeta(double matriz[][MAX_PLANETAS], char* planetas[]){
+    int origem = busca_indice_planeta(planetas);
+    int destino = busca_indice_planeta(planetas);
+
+    for (int i = 0; i < MAX_PLANETAS; i++){
+        if(destino != i){
+            matriz[origem][i] = -1;
+        }
+    }
+       
+    imprimir_matriz(matriz, planetas);
+    
+}
+
+void menu_busca(double matriz[][MAX_PLANETAS], char* planetas[],double matriz_restringida[][MAX_PLANETAS]){
     char opcao;
     do{
 
@@ -196,14 +206,31 @@ Escolha: \n\n");
         switch (opcao)
         {
         case '1':{
+            printf("A rota eh com bloqueio? ");
+            int rota_com_bloqueio;
+            scanf("%i", &rota_com_bloqueio);
             int melhor_rota[MAX_PLANETAS] = {0};
-            printf("\nCusto total: %.2lfM km\n", busca_menor_caminho(matriz, planetas, melhor_rota));
-            mostrarRota(melhor_rota, planetas);
+            if(rota_com_bloqueio == 1){
+                printf("\nCusto total: %.2lfM km\n", busca_menor_caminho(matriz_restringida, planetas, melhor_rota));
+                mostrarRota(melhor_rota, planetas);
+            }else{
+                printf("\nCusto total: %.2lfM km\n", busca_menor_caminho(matriz, planetas, melhor_rota));
+                mostrarRota(melhor_rota, planetas);
+            
+            }
             break;
         }
         case '2':{
+            printf("A rota eh com bloqueio? ");
+            int rota_com_bloqueio;
+            scanf("%i", &rota_com_bloqueio);
             int melhor_rota[MAX_PLANETAS] = {0};
-            busca_todos_os_caminho(matriz, planetas, melhor_rota);
+            if(rota_com_bloqueio == 1){
+                busca_todos_os_caminho(matriz_restringida, planetas, melhor_rota);
+            }else{
+                busca_todos_os_caminho(matriz, planetas, melhor_rota);
+           
+            }
             break;
         }
         default:
@@ -219,7 +246,7 @@ int atualizar_matriz(double matriz[][MAX_PLANETAS]){
     for (int i = 0; i < MAX_PLANETAS; i++) {
         for (int j = 0; j < MAX_PLANETAS; j++) {
             if (matriz[i][j] == -1){
-                fprintf(arquivo, "%lf ", matriz[i][j]);
+                fprintf(arquivo, "%.2lf ", matriz[i][j]);
             }else{
                 fprintf(arquivo, "%.2lf ", matriz[i][j]);
                 
@@ -233,7 +260,7 @@ int atualizar_matriz(double matriz[][MAX_PLANETAS]){
     return 0;
 }
 
-void menu(double matriz[][MAX_PLANETAS], char* planetas[]){
+void menu(double matriz[][MAX_PLANETAS], char* planetas[], double matriz_restringida[][MAX_PLANETAS]){
     char opcao;
     
     do{
@@ -245,6 +272,7 @@ void menu(double matriz[][MAX_PLANETAS], char* planetas[]){
 3 - Remover a aresta\n\
 4 - Atualizar Matriz\n\
 5 - Menu de buscar\n\
+6 - Restringir rota\n\
 0 - Sair do menu\n\n\
 Escolha um opcao: ");
 
@@ -263,8 +291,11 @@ Escolha um opcao: ");
                     printf("\nPlaneta nao encontrado! Operacao cancelada.\n");
                 } else {
                     inserirAresta(matriz, origem, destino);
+                    inserirAresta(matriz_restringida, origem, destino);
                 }
+
                 break;  
+
             }
             case '3':{
                 printf("\nRemove aresta\n\n");
@@ -283,8 +314,16 @@ Escolha um opcao: ");
                 break;
             }
             case '5':{
-                menu_busca(matriz, planetas);
+                menu_busca(matriz, planetas, matriz_restringida);
                 break;
+            }
+            case '6':{
+                printf("Quantos rotas deseja restringir: ");
+                int numero_planetas_bloquear;
+                scanf("%i", &numero_planetas_bloquear);
+                for (int i = 0; i < numero_planetas_bloquear; i++){
+                    bloquear_planeta(matriz_restringida, planetas);
+                }
             }
             default:
                 break;
@@ -298,6 +337,9 @@ int main(){
     "Saturno", "Urano", "Netuno"};
 
     double matriz[MAX_PLANETAS][MAX_PLANETAS];
+    double matriz_restringida[MAX_PLANETAS][MAX_PLANETAS];
+
+    inicializar_matriz(matriz_restringida);
 
     FILE* arquivo = abrir_arquivo_Leitura();
         if (arquivo != NULL) {
@@ -305,8 +347,13 @@ int main(){
         } else {
         inicializar_matriz(matriz);
     }
+    for (int i = 0; i < MAX_PLANETAS; i++){
+        for (int j = 0; j < MAX_PLANETAS; j++){
+            matriz_restringida[i][j] = matriz[i][j];
+        }
+    }
 
-    menu(matriz, planetas);
+    menu(matriz, planetas, matriz_restringida);
 
     atualizar_matriz(matriz);
 
