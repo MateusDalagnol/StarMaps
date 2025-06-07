@@ -5,7 +5,10 @@
 #define MAX_PLANETAS 9 //Planetas incluindo o sol
 
 FILE* abrir_arquivo_Reescrita(){
-    FILE* arquivo = fopen("custoPlanetas.txt", "w");
+    printf("nome do arquivo: (com o .txt no final): ");
+    char nome_do_arquivo[20];
+    scanf("%s", nome_do_arquivo);
+    FILE* arquivo = fopen(nome_do_arquivo, "w");
 
     if (arquivo == NULL) {
         printf("\nArquivo nao foi possivel abrir o arquivo!\n");
@@ -180,10 +183,10 @@ double busca_menor_caminho(double matriz[][MAX_PLANETAS], char* planetas[], int*
 
 void bloquear_planeta(double matriz[][MAX_PLANETAS], char* planetas[]){
     int origem = busca_indice_planeta(planetas);
-    int destino = busca_indice_planeta(planetas);
+    int restricao = busca_indice_planeta(planetas);
 
     for (int i = 0; i < MAX_PLANETAS; i++){
-        if(destino != i){
+        if(restricao != i){
             matriz[origem][i] = -1;
         }
     }
@@ -206,14 +209,15 @@ Escolha: \n\n");
         switch (opcao)
         {
         case '1':{
-            printf("A rota eh com bloqueio? ");
+            printf("A rota possui restricao? 1 - sim / 2- nao: ");
             int rota_com_bloqueio;
-            scanf("%i", &rota_com_bloqueio);
+            scanf("%d", &rota_com_bloqueio);
+
             int melhor_rota[MAX_PLANETAS] = {0};
             if(rota_com_bloqueio == 1){
                 printf("\nCusto total: %.2lfM km\n", busca_menor_caminho(matriz_restringida, planetas, melhor_rota));
                 mostrarRota(melhor_rota, planetas);
-            }else{
+            }else if(rota_com_bloqueio == 2){
                 printf("\nCusto total: %.2lfM km\n", busca_menor_caminho(matriz, planetas, melhor_rota));
                 mostrarRota(melhor_rota, planetas);
             
@@ -221,13 +225,14 @@ Escolha: \n\n");
             break;
         }
         case '2':{
-            printf("A rota eh com bloqueio? ");
+            printf("A rota possui restricao? 1 - sim / 2- nao: ");
             int rota_com_bloqueio;
-            scanf("%i", &rota_com_bloqueio);
+            scanf("%d", &rota_com_bloqueio);
+
             int melhor_rota[MAX_PLANETAS] = {0};
             if(rota_com_bloqueio == 1){
                 busca_todos_os_caminho(matriz_restringida, planetas, melhor_rota);
-            }else{
+            }else if(rota_com_bloqueio == 2){
                 busca_todos_os_caminho(matriz, planetas, melhor_rota);
            
             }
@@ -239,50 +244,75 @@ Escolha: \n\n");
     }while(opcao != '0');
 }
 
-int atualizar_matriz(double matriz[][MAX_PLANETAS]){
-    FILE* arquivo = abrir_arquivo_Reescrita();
-
-    if(arquivo == NULL){return -1;}
-    for (int i = 0; i < MAX_PLANETAS; i++) {
-        for (int j = 0; j < MAX_PLANETAS; j++) {
-            if (matriz[i][j] == -1){
-                fprintf(arquivo, "%.2lf ", matriz[i][j]);
-            }else{
-                fprintf(arquivo, "%.2lf ", matriz[i][j]);
+int atualizar_matriz(double matriz[][MAX_PLANETAS], double matriz_restringida[][MAX_PLANETAS]){
+    printf("deseja altera o arquivo da matriz restringida? 1 - sim / 2 - nao ");
+    int restringida;
+    scanf("%d", &restringida);
+    if(restringida == 1){
+        FILE* arquivo = abrir_arquivo_Reescrita();
+        if(arquivo == NULL){return -1;}
+        for (int i = 0; i < MAX_PLANETAS; i++) {
+            for (int j = 0; j < MAX_PLANETAS; j++) {
+                if (matriz_restringida[i][j] == -1){
+                    fprintf(arquivo, "%.2lf ", matriz_restringida[i][j]);
+                }else{
+                    fprintf(arquivo, "%.2lf ", matriz_restringida[i][j]);
                 
-            }
+                }
             
-        }
+            }
         fprintf(arquivo, "\n");
+        }
+        fechar_arquivo(arquivo);
+    }else{
+         FILE* arquivo = abrir_arquivo_Reescrita();
+        if(arquivo == NULL){return -1;}
+        for (int i = 0; i < MAX_PLANETAS; i++) {
+            for (int j = 0; j < MAX_PLANETAS; j++) {
+                if (matriz[i][j] == -1){
+                    fprintf(arquivo, "%.2lf ", matriz[i][j]);
+                }else{
+                    fprintf(arquivo, "%.2lf ", matriz[i][j]);
+                
+                }
+            
+            }
+            fprintf(arquivo, "\n");
+        }
+        fechar_arquivo(arquivo);
     }
-
-    fechar_arquivo(arquivo);
     return 0;
 }
 
 void menu(double matriz[][MAX_PLANETAS], char* planetas[], double matriz_restringida[][MAX_PLANETAS]){
-    char opcao;
+    int opcao;
     
     do{
         printf("\n=== MENU PRINCIPAL ===\n");
 
         printf("\n\
 1 - Imprimir a matriz\n\
+    11 - Imprimir a matriz restringida\n\
 2 - Inserir a aresta\n\
 3 - Remover a aresta\n\
 4 - Atualizar Matriz\n\
 5 - Menu de buscar\n\
 6 - Restringir rota\n\
+7 - Tirar restricao\n\
 0 - Sair do menu\n\n\
 Escolha um opcao: ");
 
-        scanf(" %c", &opcao);
+        scanf("%i", &opcao);
         switch(opcao){
-            case '1':{
+            case 1:{
                 imprimir_matriz(matriz, planetas);
                 break;
             }
-            case '2':{
+            case 11:{
+                imprimir_matriz(matriz_restringida, planetas);
+                break;
+            }
+            case 2:{
                 printf("\nAdd aresta");
                 int origem = busca_indice_planeta(planetas);
                 int destino = busca_indice_planeta(planetas);
@@ -291,13 +321,13 @@ Escolha um opcao: ");
                     printf("\nPlaneta nao encontrado! Operacao cancelada.\n");
                 } else {
                     inserirAresta(matriz, origem, destino);
-                    inserirAresta(matriz_restringida, origem, destino);
+
                 }
 
                 break;  
 
             }
-            case '3':{
+            case 3:{
                 printf("\nRemove aresta\n\n");
                 int origem = busca_indice_planeta(planetas);
                 int destino = busca_indice_planeta(planetas);
@@ -309,15 +339,16 @@ Escolha um opcao: ");
                 }
                 break;
             }
-            case '4':{
-                atualizar_matriz(matriz);
+            case 4:{
+                atualizar_matriz(matriz, matriz_restringida);
                 break;
             }
-            case '5':{
+            case 5:{
                 menu_busca(matriz, planetas, matriz_restringida);
                 break;
             }
-            case '6':{
+            case 6:{
+                imprimir_matriz(matriz_restringida, planetas);
                 printf("Quantos rotas deseja restringir: ");
                 int numero_planetas_bloquear;
                 scanf("%i", &numero_planetas_bloquear);
@@ -325,10 +356,20 @@ Escolha um opcao: ");
                     bloquear_planeta(matriz_restringida, planetas);
                 }
             }
+            case 7:{
+                printf("Tirar restricao: ");
+                for (int i = 0; i < MAX_PLANETAS; i++){
+                    for (int j = 0; j < MAX_PLANETAS; j++){
+                        matriz_restringida[i][j] = matriz[i][j];
+                    }
+                    
+                }
+                
+            }
             default:
                 break;
         }
-    }while (opcao != '0');
+    }while (opcao != 0);
 }
 
 int main(){
@@ -339,23 +380,16 @@ int main(){
     double matriz[MAX_PLANETAS][MAX_PLANETAS];
     double matriz_restringida[MAX_PLANETAS][MAX_PLANETAS];
 
-    inicializar_matriz(matriz_restringida);
-
     FILE* arquivo = abrir_arquivo_Leitura();
         if (arquivo != NULL) {
         ler_arquivo(matriz, arquivo);
         } else {
         inicializar_matriz(matriz);
     }
-    for (int i = 0; i < MAX_PLANETAS; i++){
-        for (int j = 0; j < MAX_PLANETAS; j++){
-            matriz_restringida[i][j] = matriz[i][j];
-        }
-    }
 
     menu(matriz, planetas, matriz_restringida);
 
-    atualizar_matriz(matriz);
+    atualizar_matriz(matriz, matriz_restringida);
 
     return 0;
 }
